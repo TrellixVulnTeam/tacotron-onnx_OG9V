@@ -1,4 +1,4 @@
-# *****************************************************************************
+    # *****************************************************************************
 #  Copyright (c) 2018, NVIDIA CORPORATION.  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@ from tacotron2.text import text_to_sequence
 from inference import MeasureTime, prepare_input_sequence, load_and_setup_model
 import dllogger as DLLogger
 from dllogger import StdOutBackend, JSONStreamBackend, Verbosity
-from trt_utils import load_engine, run_trt_engine
+from tensorrt.trt_utils import load_engine, run_trt_engine
 
 from waveglow.denoiser import Denoiser
 

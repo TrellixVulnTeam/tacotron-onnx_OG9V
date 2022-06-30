@@ -107,7 +107,7 @@ def prenet_infer(self, x):
     for linear in self.layers:
         x1 = F.relu(linear(x1))
         x0 = x1[0].unsqueeze(0)
-        mask = torch.le(torch.rand(256, device='cuda').to(x.dtype), 0.5).to(x.dtype)
+        mask = torch.le(torch.rand(256, device='cpu').to(x.dtype), 0.5).to(x.dtype)
         mask = mask.expand(x1.size(0), x1.size(1))
         x1 = x1*mask*2.0
 
@@ -224,7 +224,7 @@ def test_inference(encoder, decoder_iter, postnet):
     decoder_iter.eval()
     postnet.eval()
 
-    from trt.inference_trt import init_decoder_inputs
+    from tensorrt.inference_trt import init_decoder_inputs
 
     texts = ["Hello World, good day."]
     sequences, sequence_lengths = prepare_input_sequence(texts)
@@ -297,13 +297,13 @@ def main():
     args, _ = parser.parse_known_args()
 
     tacotron2 = load_and_setup_model('Tacotron2', parser, args.tacotron2,
-                                     fp16_run=args.fp16, cpu_run=False)
+                                     fp16_run=args.fp16, cpu_run=True)
 
     opset_version = 10
 
     sequences = torch.randint(low=0, high=148, size=(1,50),
-                             dtype=torch.long).cuda()
-    sequence_lengths = torch.IntTensor([sequences.size(1)]).cuda().long()
+                             dtype=torch.long).cpu()
+    sequence_lengths = torch.IntTensor([sequences.size(1)]).cpu().long()
     dummy_input = (sequences, sequence_lengths)
 
     encoder = Encoder(tacotron2)
@@ -322,7 +322,7 @@ def main():
                       })
 
     decoder_iter = DecoderIter(tacotron2)
-    memory = torch.randn((1,sequence_lengths[0],512)).cuda() #encoder_outputs
+    memory = torch.randn((1,sequence_lengths[0],512)).cpu() #encoder_outputs
     if args.fp16:
         memory = memory.half()
     memory_lengths = sequence_lengths
@@ -387,7 +387,7 @@ def main():
                       })
 
     postnet = Postnet(tacotron2)
-    dummy_input = torch.randn((1,80,620)).cuda()
+    dummy_input = torch.randn((1,80,620)).cpu()
     if args.fp16:
         dummy_input = dummy_input.half()
     torch.onnx.export(postnet, dummy_input, args.output+"/"+"postnet.onnx",

@@ -161,8 +161,8 @@ def prepare_input_sequence(texts, cpu_run=False):
 
     text_padded, input_lengths = pad_sequences(d)
     if not cpu_run:
-        text_padded = text_padded.cuda().long()
-        input_lengths = input_lengths.cuda().long()
+        text_padded = text_padded.cpu().long()
+        input_lengths = input_lengths.cpu().long()
     else:
         text_padded = text_padded.long()
         input_lengths = input_lengths.long()
@@ -210,7 +210,7 @@ def main():
                                     args.fp16, args.cpu, forward_is_infer=True)
     denoiser = Denoiser(waveglow)
     if not args.cpu:
-        denoiser.cuda()
+        denoiser.cpu()
 
     jitted_tacotron2 = torch.jit.script(tacotron2)
 
@@ -226,8 +226,8 @@ def main():
         sequence = torch.randint(low=0, high=148, size=(1,50)).long()
         input_lengths = torch.IntTensor([sequence.size(1)]).long()
         if not args.cpu:
-            sequence = sequence.cuda()
-            input_lengths = input_lengths.cuda()
+            sequence = sequence.cpu()
+            input_lengths = input_lengths.cpu()
         for i in range(3):
             with torch.no_grad():
                 mel, mel_lengths, _ = jitted_tacotron2(sequence, input_lengths)
